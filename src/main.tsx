@@ -5,7 +5,6 @@ import "./index.css";
 import { Amplify } from "aws-amplify";
 import outputs from "../amplify_outputs.json";
 import {Authenticator, useAuthenticator} from '@aws-amplify/ui-react'
-import {signIn} from 'aws-amplify/auth'
 import {useState} from "react";
 
 Amplify.configure(outputs);
@@ -23,47 +22,57 @@ interface SignInForm extends HTMLFormElement {
 }
 
 import {signUp, SignUpInput} from '@aws-amplify/auth'
+import {signIn, signInInput, confirmSignIn} from '@aws-amplify/auth'
 
 const formFields = {
 
     signIn: {
-        username: {
-            label: 'Username',
-            placeholder : 'Enter your username',
-            isRequired: true,
+        mfaCode : {
+            label : 'code',
+            placeholder: 'enter code',
+            isRequired: false,
         },
         password: {
             label: 'Password',
             placeholder: 'Enter your password',
             isRequired: true,
         },
-        email: {
-            label: 'Email',
-            placeholder: 'Enter your email',
-            isRequired: true,
-        }
+
     },
 
     signUp : {
-        username: {
-            label: 'Username',
-            placeholder : 'Enter your username',
-            isRequired: true,
-        },
+
         password: {
             label: 'Password',
             placeholder: 'Enter your password',
             isRequired: true,
         },
-        email: {
-            label: 'Email',
-            placeholder: 'Enter your email',
-            isRequired: true,
-        }
+
     }
 }
 
-const signUpServices = {
+
+
+
+const services = {
+    async handleSignIn(input: signInInput) {
+        const {username, password} = input;
+        const {nextStep} = await signIn({
+            username: username,
+            password: password
+        })
+        if(nextStep.signInStep === 'DONE'){
+            return {
+                isSignedIn: true,
+                nextStep: {signInStep : 'DONE'},
+            }
+        }
+
+
+
+    },
+
+
     async handleSignUp(input: SignUpInput) {
         // custom username and email
         const { username, password, options } = input;
@@ -80,14 +89,20 @@ const signUpServices = {
                 },
             },
         });
-    },
+    }
 }
+
+// const signUpServices = {
+//
+// }
 
 
 
 function Main() {
+
     return (
-        <Authenticator services={signUpServices} initialState="signUp" formFields={formFields}>
+
+        <Authenticator services={services} initialState="signUp" formFields={formFields}>
             {({ signOut }) => <button onClick={signOut}>Sign out</button>}
         </Authenticator>
     )
