@@ -57,16 +57,11 @@ const formFields = {
 const services = {
     async handleSignIn(input: signInInput) {
         const {username, password} = input;
-        const {nextStep} = await signIn({
+        return  await signIn({
             username: username,
             password: password
         })
-        if(nextStep.signInStep === 'DONE'){
-            return {
-                isSignedIn: true,
-                nextStep: {signInStep : 'DONE'},
-            }
-        }
+
 
 
 
