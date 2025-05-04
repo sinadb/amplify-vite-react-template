@@ -27,8 +27,23 @@ import {signUp, SignUpInput} from '@aws-amplify/auth'
 const formFields = {
 
     signIn: {
+        username: {
+            label: 'Username',
+            placeholder : 'Enter your username',
+            isRequired: true,
+        },
+        password: {
+            label: 'Password',
+            placeholder: 'Enter your password',
+            isRequired: true,
+        },
+        email: {
+            label: 'Email',
+            placeholder: 'Enter your email',
+            isRequired: true,
+        }
+    },
 
-    }
     signUp : {
         username: {
             label: 'Username',
