@@ -1,28 +1,34 @@
-import React, {FormEvent} from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
+
 import "./index.css";
 import { Amplify } from "aws-amplify";
 import outputs from "../amplify_outputs.json";
-import {Authenticator, useAuthenticator} from '@aws-amplify/ui-react'
-import {useState} from "react";
+import {Authenticator} from '@aws-amplify/ui-react'
+import {cognitoUserPoolsTokenProvider} from 'aws-amplify/auth/cognito'
 
-Amplify.configure(outputs);
+
+
+Amplify.configure(
+    outputs
+
+);
+
+
+// import {setUpTOTP} from 'aws-amplify/auth'
+// const totpSetupDetails = await setUpTOTP()
+// const app_name = "my_app"
+// const setupUri = totpSetupDetails.getSetupUri(app_name)
 
 // const [email, setEmail] = useState("");
 // const [password, setPassword] = useState("");
 
-interface SignInFormElements extends HTMLFormControlsCollection {
-    email: HTMLInputElement;
-    password: HTMLInputElement;
-}
 
-interface SignInForm extends HTMLFormElement {
-    readonly elements: SignInFormElements;
-}
+
+
 
 import {signUp, SignUpInput} from '@aws-amplify/auth'
-import {signIn, signInInput, confirmSignIn} from '@aws-amplify/auth'
+import {signIn, SignInInput, } from '@aws-amplify/auth'
+import {signOut} from '@aws-amplify/auth'
 
 const formFields = {
 
@@ -52,15 +58,44 @@ const formFields = {
 }
 
 
+import {fetchAuthSession} from '@aws-amplify/auth'
+import {CookieStorage} from 'aws-amplify/utils'
+
+cognitoUserPoolsTokenProvider.setKeyValueStorage(new CookieStorage({
+    domain: 'localhost',  // Replace with your domain
+    path: '/',
+    expires: 365,
+    sameSite:'lax',
+    secure: false
+    // Set to true if using HTTPS
+}));
+async function currentSession() {
+    try {
+        const {tokens} = await fetchAuthSession();
+
+        return tokens;
+    }catch(error) {
+        console.error(error);
+    }
+}
 
 
 const services = {
-    async handleSignIn(input: signInInput) {
+    async handleSignIn(input: SignInInput) {
         const {username, password} = input;
-        return  await signIn({
+        const {nextStep} = await signIn({
             username: username,
             password: password
         })
+        console.log(nextStep.signInStep)
+        const tokens = await currentSession()
+        console.log("session tokens are : ", tokens);
+
+
+        return {
+            isAuthenticated: true,
+            nextStep,
+        }
 
 
 
@@ -72,7 +107,7 @@ const services = {
         // custom username and email
         const { username, password, options } = input;
         const customUsername = username.toLowerCase();
-        const customEmail = options?.userAttributes?.email.toLowerCase();
+        const customEmail = options?.userAttributes?.email?.toLowerCase();
         return signUp({
             username: customUsername,
             password,
@@ -87,19 +122,23 @@ const services = {
     }
 }
 
-// const signUpServices = {
-//
-// }
+
+
+
 
 
 
 function Main() {
 
+
     return (
 
+
         <Authenticator services={services} initialState="signUp" formFields={formFields}>
-            {({ signOut }) => <button onClick={signOut}>Sign out</button>}
-        </Authenticator>
+            <button onClick={signOut}>"SignOut"</button>
+
+         </Authenticator>
+
     )
 }
 ReactDOM.createRoot(document.getElementById("root")!).render(
