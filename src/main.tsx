@@ -3,7 +3,6 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import { Amplify } from "aws-amplify";
 import outputs from "../amplify_outputs.json";
-import {Authenticator} from '@aws-amplify/ui-react'
 import {cognitoUserPoolsTokenProvider} from 'aws-amplify/auth/cognito'
 
 
@@ -14,52 +13,43 @@ Amplify.configure(
 );
 
 
-// import {setUpTOTP} from 'aws-amplify/auth'
-// const totpSetupDetails = await setUpTOTP()
-// const app_name = "my_app"
-// const setupUri = totpSetupDetails.getSetupUri(app_name)
-
-// const [email, setEmail] = useState("");
-// const [password, setPassword] = useState("");
 
 
 
 
 
-import {signUp, SignUpInput} from '@aws-amplify/auth'
-import {signIn, SignInInput, } from '@aws-amplify/auth'
-import {signOut} from '@aws-amplify/auth'
-
-const formFields = {
-
-    signIn: {
-        mfaCode : {
-            label : 'code',
-            placeholder: 'enter code',
-            isRequired: false,
-        },
-        password: {
-            label: 'Password',
-            placeholder: 'Enter your password',
-            isRequired: true,
-        },
-
-    },
-
-    signUp : {
-
-        password: {
-            label: 'Password',
-            placeholder: 'Enter your password',
-            isRequired: true,
-        },
-
-    }
-}
 
 
-import {fetchAuthSession} from '@aws-amplify/auth'
+// const formFields = {
+//
+//     signIn: {
+//         mfaCode : {
+//             label : 'code',
+//             placeholder: 'enter code',
+//             isRequired: false,
+//         },
+//         password: {
+//             label: 'Password',
+//             placeholder: 'Enter your password',
+//             isRequired: true,
+//         },
+//
+//     },
+//
+//     signUp : {
+//
+//         password: {
+//             label: 'Password',
+//             placeholder: 'Enter your password',
+//             isRequired: true,
+//         },
+//
+//     }
+// }
+
+
 import {CookieStorage} from 'aws-amplify/utils'
+import React from "react";
 
 cognitoUserPoolsTokenProvider.setKeyValueStorage(new CookieStorage({
     domain: 'localhost',  // Replace with your domain
@@ -69,59 +59,46 @@ cognitoUserPoolsTokenProvider.setKeyValueStorage(new CookieStorage({
     secure: false
     // Set to true if using HTTPS
 }));
-async function currentSession() {
-    try {
-        const {tokens} = await fetchAuthSession();
+// async function currentSession() {
+//     try {
+//         const {tokens} = await fetchAuthSession();
+//
+//         return tokens;
+//     }catch(error) {
+//         console.error(error);
+//     }
+// }
+import {generateClient} from "aws-amplify/data";
+import {Schema} from "../amplify/data/resource.ts";
 
-        return tokens;
-    }catch(error) {
-        console.error(error);
-    }
+const client = generateClient<Schema>()
+
+// type Todo = Schema['Todo']['type']
+//
+// async function createTodo() {
+//     await client.models.Todo.create({
+//         content: window.prompt("Todo content?")
+//
+//
+//
+//     })
+// }
+
+async function createRandomTable() {
+    await client.models.RandomTable.create({
+        name: window.prompt("What is the name?"),
+        age: window.prompt("What is the age?")
+
+    })
 }
 
-
-const services = {
-    async handleSignIn(input: SignInInput) {
-        const {username, password} = input;
-        const {nextStep} = await signIn({
-            username: username,
-            password: password
-        })
-        console.log(nextStep.signInStep)
-        const tokens = await currentSession()
-        console.log("session tokens are : ", tokens);
-
-
-        return {
-            isAuthenticated: true,
-            nextStep,
-        }
-
-
-
-
-    },
-
-
-    async handleSignUp(input: SignUpInput) {
-        // custom username and email
-        const { username, password, options } = input;
-        const customUsername = username.toLowerCase();
-        const customEmail = options?.userAttributes?.email?.toLowerCase();
-        return signUp({
-            username: customUsername,
-            password,
-            options: {
-                ...input.options,
-                userAttributes: {
-                    ...input.options?.userAttributes,
-                    email: customEmail,
-                },
-            },
-        });
-    }
-}
-
+// // @ts-ignore
+// async function createToDoTable(){
+//     await client.models.Todo.create({
+//         content: window.prompt("What is the name?"),
+//         isDone: false
+//     })
+// }
 
 
 
@@ -129,15 +106,35 @@ const services = {
 
 
 function Main() {
+//
+// async function fetchTodos() {
+//     client.models.Todo.observeQuery().subscribe({
+//         next: ({items, isSynced}) => {
+//                 setTodos(items);
+//
+//         }
+//     })
+// }
 
+    // useEffect(() => {
+    //     fetchTodos()
+    // }, []);
 
     return (
 
 
-        <Authenticator services={services} initialState="signUp" formFields={formFields}>
-            <button onClick={signOut}>"SignOut"</button>
+        // <ul>
+        //     {todos.map((item, index) => (
+        //         <li>
+        //             {item.content}
+        //         </li>
+        //     ))}
+        // </ul>
+        //<Authenticator services={services} initialState="signUp" formFields={formFields}>
+            <button onClick={createRandomTable}>"SignOut"</button>
 
-         </Authenticator>
+
+
 
     )
 }
